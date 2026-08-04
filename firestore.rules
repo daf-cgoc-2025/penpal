@@ -1,0 +1,91 @@
+rules_version = '2';
+
+// DAF CGOC Penpal — Firestore security rules
+// Source of truth for the rules published in the Firebase console
+// (project "dafcgoc"). The public form may ONLY create documents in
+// penpalIntake, and only documents that match the intake payload built
+// by js/penpal.js exactly. Nothing is readable from the client — the
+// roster of submissions never leaves the console / Apps Script.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isStr(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
+    }
+
+    match /penpalIntake/{docId} {
+      allow read, update, delete: if false;
+
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'schemaVersion', 'program', 'role', 'name', 'email',
+          'mentee', 'mentor', 'ask', 'commitment', 'createdAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'schemaVersion', 'program', 'role', 'name', 'email',
+          'ask', 'commitment', 'createdAt'
+        ])
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.program == 'DAF CGOC Mentorship'
+        && request.resource.data.role in ['mentee', 'mentor']
+        && request.resource.data.name is map
+        && request.resource.data.name.keys().hasOnly(['rank', 'first', 'last'])
+        && isStr(request.resource.data.name.first, 1, 60)
+        && isStr(request.resource.data.name.last, 1, 60)
+        && isStr(request.resource.data.name.rank, 0, 40)
+        && isStr(request.resource.data.email, 5, 120)
+        && request.resource.data.email.matches('.+@.+\\..+')
+        && isStr(request.resource.data.ask, 0, 2000)
+        && request.resource.data.commitment == true
+        // server-assigned timestamp (client sends serverTimestamp())
+        && request.resource.data.createdAt == request.time
+        && (
+          (
+            request.resource.data.role == 'mentee'
+            && request.resource.data.mentor == null
+            && request.resource.data.mentee is map
+            && request.resource.data.mentee.keys().hasOnly([
+              'commissioningSource', 'afrotcDetachment', 'otherSource',
+              'commissioningDateExpected', 'afsc', 'firstDutyLocation',
+              'goals', 'matchPreference'
+            ])
+            && isStr(request.resource.data.mentee.commissioningSource, 1, 60)
+            && isStr(request.resource.data.mentee.afrotcDetachment, 0, 80)
+            && isStr(request.resource.data.mentee.otherSource, 0, 120)
+            && isStr(request.resource.data.mentee.commissioningDateExpected, 1, 10)
+            && isStr(request.resource.data.mentee.afsc, 1, 60)
+            && isStr(request.resource.data.mentee.firstDutyLocation, 1, 120)
+            && request.resource.data.mentee.goals is list
+            && request.resource.data.mentee.goals.size() == 2
+            && isStr(request.resource.data.mentee.matchPreference, 1, 120)
+          )
+          ||
+          (
+            request.resource.data.role == 'mentor'
+            && request.resource.data.mentee == null
+            && request.resource.data.mentor is map
+            && request.resource.data.mentor.keys().hasOnly([
+              'rankTimeInService', 'afscTitle', 'dutyLocation',
+              'commissioningDateActual', 'experiences', 'mentoringAreas',
+              'menteeCapacity'
+            ])
+            && isStr(request.resource.data.mentor.rankTimeInService, 1, 60)
+            && isStr(request.resource.data.mentor.afscTitle, 1, 80)
+            && isStr(request.resource.data.mentor.dutyLocation, 1, 120)
+            && isStr(request.resource.data.mentor.commissioningDateActual, 1, 10)
+            && isStr(request.resource.data.mentor.experiences, 1, 2000)
+            && request.resource.data.mentor.mentoringAreas is list
+            && request.resource.data.mentor.mentoringAreas.size() >= 1
+            && request.resource.data.mentor.mentoringAreas.size() <= 3
+            && isStr(request.resource.data.mentor.menteeCapacity, 1, 5)
+          )
+        );
+    }
+
+    // Everything else in the database: no client access.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
