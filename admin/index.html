@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — DAF CGOC Mentorship Program</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="../css/fonts.css">
+  <link rel="stylesheet" href="admin.css">
+  <link rel="shortcut icon" href="../favicon.png">
+</head>
+<body data-palette="#B08A3E,#3E7BD6">
+
+  <header class="bar">
+    <div class="bar__brand">
+      <img src="../assets/logos/dafcgoc-logo.png" alt="DAF CGOC" width="84" height="32">
+      <span>Mentorship Program <em>Admin</em></span>
+    </div>
+    <div class="bar__user" id="user-area" hidden>
+      <span class="bar__email" id="user-email"></span>
+      <button class="btn btn--ghost" id="btn-signout" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <!-- ======== Signed out ======== -->
+  <main class="gate" id="view-signedout" hidden>
+    <div class="gate__card">
+      <h1>Program dashboard</h1>
+      <p>Responses and program analytics for the DAF CGOC Mentorship Program.
+         Access is limited to approved council members.</p>
+      <button class="btn btn--gold" id="btn-signin" type="button">
+        <svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true"><path fill="#fff" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92a8.78 8.78 0 0 0 2.68-6.62z"/><path fill="#fff" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#fff" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3-2.33z"/><path fill="#fff" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59A9 9 0 0 0 .96 4.95l3 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+        Sign in with Google
+      </button>
+      <p class="gate__err" id="signin-error" role="alert" hidden></p>
+    </div>
+  </main>
+
+  <!-- ======== Signed in, not on the list ======== -->
+  <main class="gate" id="view-noaccess" hidden>
+    <div class="gate__card">
+      <h1>No access</h1>
+      <p><span id="noaccess-email" class="mono"></span> isn't on the viewer list for
+         this dashboard. Ask the program admin to add you, then sign in again.</p>
+      <button class="btn btn--ghost" id="btn-signout-2" type="button">Sign out</button>
+    </div>
+  </main>
+
+  <!-- ======== Dashboard ======== -->
+  <main class="wrap" id="view-dash" hidden>
+    <nav class="tabs" role="tablist" aria-label="Dashboard sections">
+      <button class="tab is-active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
+      <button class="tab" data-tab="responses" role="tab" aria-selected="false" id="tab-responses">Responses</button>
+      <button class="tab" data-tab="viewers" role="tab" aria-selected="false" id="tab-viewers" hidden>Viewers</button>
+      <span class="tabs__spacer"></span>
+      <button class="btn btn--gold btn--sm" id="btn-report" type="button" hidden>Download report (PDF)</button>
+    </nav>
+
+    <section id="panel-overview" class="panel" role="tabpanel">
+      <div class="tiles" id="tiles"></div>
+      <div class="charts" id="charts"></div>
+      <p class="note" id="stats-note" hidden></p>
+    </section>
+
+    <section id="panel-responses" class="panel" role="tabpanel" hidden>
+      <div class="filters">
+        <select id="f-role" aria-label="Filter by role">
+          <option value="">All roles</option>
+          <option value="mentee">Mentees</option>
+          <option value="mentor">Mentors</option>
+        </select>
+        <input id="f-search" type="search" placeholder="Search name, email, AFSC, base…" aria-label="Search responses">
+        <span class="filters__count" id="f-count"></span>
+      </div>
+      <div class="tablewrap">
+        <table class="rtable" id="rtable">
+          <thead><tr>
+            <th>Submitted</th><th>Role</th><th>Name</th><th>Email</th><th>AFSC</th><th>Location</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="note" id="responses-empty" hidden>No submissions yet.</p>
+    </section>
+
+    <section id="panel-viewers" class="panel" role="tabpanel" hidden>
+      <form class="addviewer" id="add-viewer">
+        <input type="email" id="v-email" placeholder="email@example.com" required aria-label="Viewer email">
+        <select id="v-access" aria-label="Access level">
+          <option value="both">Responses + analytics</option>
+          <option value="responses">Responses only</option>
+          <option value="analytics">Analytics only</option>
+        </select>
+        <button class="btn btn--gold btn--sm" type="submit">Add viewer</button>
+      </form>
+      <div class="tablewrap">
+        <table class="rtable" id="vtable">
+          <thead><tr><th>Email</th><th>Access</th><th>Added</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="note">Super-admins (always full access): arkady232@gmail.com, nationalcgoc@gmail.com.</p>
+    </section>
+  </main>
+
+  <!-- ======== Detail overlay ======== -->
+  <div class="overlay" id="detail" hidden>
+    <div class="overlay__card" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <button class="overlay__close" id="detail-close" aria-label="Close">×</button>
+      <h2 id="detail-title"></h2>
+      <dl id="detail-body"></dl>
+    </div>
+  </div>
+
+  <div class="loading" id="loading"><span></span> Loading…</div>
+  <div class="tooltip" id="tooltip" hidden></div>
+
+  <!-- Print-only report shell; filled by admin.js on demand -->
+  <div id="report" class="report" hidden></div>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

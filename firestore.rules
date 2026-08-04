@@ -14,8 +14,41 @@ service cloud.firestore {
       return v is string && v.size() >= min && v.size() <= max;
     }
 
+    // ---- Dashboard access ----
+    // Super-admins manage the viewer allowlist; viewers are docs in
+    // dashboardUsers keyed by lowercase email with { access: 'both' |
+    // 'responses' | 'analytics' }.
+    function isSuper() {
+      return request.auth != null &&
+        request.auth.token.email in ['arkady232@gmail.com', 'nationalcgoc@gmail.com'];
+    }
+    function viewerPath() {
+      return /databases/$(database)/documents/dashboardUsers/$(request.auth.token.email);
+    }
+    function canView(kinds) {
+      return isSuper() ||
+        (request.auth != null && exists(viewerPath()) &&
+         get(viewerPath()).data.access in kinds);
+    }
+
+    match /dashboardUsers/{email} {
+      // a signed-in viewer may read their own entry (to learn their access);
+      // only super-admins may list or modify the allowlist
+      allow get: if isSuper() ||
+        (request.auth != null && request.auth.token.email == email);
+      allow list, write: if isSuper();
+    }
+
+    // PII-free aggregates for analytics-only viewers; written by
+    // super-admin dashboard sessions (and server-side jobs via IAM).
+    match /dashboardStats/{docId} {
+      allow read: if canView(['analytics', 'responses', 'both']);
+      allow write: if isSuper();
+    }
+
     match /penpalIntake/{docId} {
-      allow read, update, delete: if false;
+      allow update, delete: if false;
+      allow read: if canView(['responses', 'both']);
 
       allow create: if
         request.resource.data.keys().hasOnly([

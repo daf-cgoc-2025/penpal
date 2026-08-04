@@ -1,3 +1,4 @@
 # Firebase web app config apiKey — public by design (identifies the project;
 # access control is firestore.rules). See https://firebase.google.com/docs/projects/api-keys
 index.html:gcp-api-key:579
+admin/admin.js:gcp-api-key:17
