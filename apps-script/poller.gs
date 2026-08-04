@@ -16,6 +16,19 @@
  * function `syncIntakes`.
  */
 
+/**
+ * ONE-TIME SETUP — run this once from the editor (Run ▸ setup). It grants
+ * the auth prompts and creates all triggers: intake sync every 15 min,
+ * weekly analytics report (Mondays), monthly analytics report (1st).
+ */
+function setup() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('syncIntakes').timeBased().everyMinutes(15).create();
+  ScriptApp.newTrigger('weeklyReport').timeBased().onWeekDay(ScriptApp.WeekDay.MONDAY).atHour(6).create();
+  ScriptApp.newTrigger('monthlyReport').timeBased().onMonthDay(1).atHour(6).create();
+  syncIntakes(); // first sync now — also surfaces any permission problem immediately
+}
+
 var PROJECT_ID = 'dafcgoc';
 var COLLECTION = 'penpalIntake';
 var NOTIFY_EMAIL = 'nationalcgoc@gmail.com';
