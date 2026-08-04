@@ -21,8 +21,13 @@
  */
 
 var GA4_PROPERTIES = [
-  { label: 'DAF CGOC (sitewide)', id: 'REPLACE_WITH_NUMERIC_PROPERTY_ID' }
-  // , { label: 'DAF CGOC (Firebase)', id: 'REPLACE_IF_WANTED' }
+  // Firebase-linked "dafcgoc" property. Every page is dual-tagged, so this
+  // property receives all site + penpal hits; the project owner
+  // (nationalcgoc@gmail.com) has access automatically.
+  { label: 'DAF CGOC (Firebase property)', id: '548474741' }
+  // Optionally also report on the original sitewide property (owns
+  // G-74QCBZFVWH) — needs Viewer access granted in that GA account:
+  // , { label: 'DAF CGOC (sitewide)', id: 'NUMERIC_ID_FROM_GA_ADMIN' }
 ];
 
 var REPORT_EMAIL = 'nationalcgoc@gmail.com';

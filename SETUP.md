@@ -4,19 +4,17 @@ Everything in this list is done signed in as **nationalcgoc@gmail.com** (turn on
 2-Step Verification for this account if it isn't already). No paid plan is
 needed — everything below stays on the free Spark tier, no credit card.
 
-## 1. Create the Firestore database (project `dafcgoc`)
+## 1. Create the Firestore database — ✅ DONE (2026-08-04)
 
-1. [Firebase console](https://console.firebase.google.com/) → project **DAFCGOC** → Build → **Firestore Database** → *Create database*.
-2. Location: **nam5 (United States)**. Mode: **production mode** (locked). The location is permanent.
+Database `(default)` created in **nam5 (United States)**, production mode.
 
-## 2. Publish the security rules
+## 2. Publish the security rules — ✅ DONE (2026-08-04)
 
-1. Firestore → **Rules** tab.
-2. Replace the contents with the full text of [`firestore.rules`](firestore.rules) from this repo → **Publish**.
-3. Sanity-check in the **Rules Playground**: a `get` on `/penpalIntake/x` must be **denied**; an unauthenticated `create` is allowed only when the document matches the intake shape.
-
-Until this step is done, form submissions are rejected (the page then falls
-back to opening the visitor's email app addressed to nationalcgoc@gmail.com).
+[`firestore.rules`](firestore.rules) is published and verified end-to-end:
+a live submission from the dev site landed in `penpalIntake`; unauthenticated
+reads and malformed creates are rejected. To change rules later, edit the file
+here and re-publish (Firestore → Rules tab, or `firebase deploy --only
+firestore:rules` with sufficient IAM).
 
 ## 3. Response sheet + email notifications (Apps Script)
 
@@ -24,9 +22,9 @@ back to opening the visitor's email app addressed to nationalcgoc@gmail.com).
 2. Extensions → **Apps Script**. In the editor:
    - Project Settings → check *Show "appsscript.json" manifest file*, then replace its contents with [`apps-script/appsscript.json`](apps-script/appsscript.json).
    - Replace `Code.gs` with [`apps-script/poller.gs`](apps-script/poller.gs).
-3. Run `syncIntakes` once from the editor → grant the authorization prompts (Firestore access + email + this sheet).
-4. Triggers (clock icon) → *Add trigger*: function `syncIntakes`, time-driven, **every 15 minutes**.
-5. New submissions now appear as rows in the **Intakes** tab and as an email to nationalcgoc@gmail.com within 15 minutes.
+3. Also add [`apps-script/ga4-reports.gs`](apps-script/ga4-reports.gs) as a second file (see §4).
+4. Run **`setup`** once from the editor → grant the authorization prompts. This creates all three triggers (intake sync every 15 min, weekly report, monthly report) and runs the first sync immediately.
+5. New submissions now appear as rows in the **Intakes** tab and as an email to nationalcgoc@gmail.com within 15 minutes. A test submission ("EndToEnd Test", marked *delete me*) is already sitting in Firestore — the first sync should pick it up; delete its row and the Firestore doc after confirming.
 
 > The scripts currently BCC `arkady232@gmail.com` — **temporary, for launch
 > testing only**. Delete the `TEST_BCC` / `REPORT_BCC` values after verifying.
@@ -35,9 +33,13 @@ back to opening the visitor's email app addressed to nationalcgoc@gmail.com).
 
 1. In the same Apps Script project, add a file with [`apps-script/ga4-reports.gs`](apps-script/ga4-reports.gs).
 2. Services (+) → enable **Google Analytics Data API** (service name `AnalyticsData`).
-3. In [GA Admin](https://analytics.google.com/) → Property → *Property details*, copy the **numeric property ID** of the property that owns `G-74QCBZFVWH` and paste it into `GA4_PROPERTIES` in the script. (nationalcgoc@gmail.com needs at least Viewer access on that property — ask whoever owns the "nationalcgoc" GA account to add it if a permissions error appears.)
-4. Run `weeklyReport` once manually to authorize and verify the email arrives.
-5. Add two triggers: `weeklyReport` (week timer, Mondays) and `monthlyReport` (month timer, 1st).
+3. The GA4 property ID is already filled in (`548474741`, the Firebase-linked
+   property — it receives all hits because every page is dual-tagged, and the
+   project owner has access automatically). Optionally add the original
+   sitewide property too; see the comment in the script.
+4. Run `weeklyReport` once manually to verify the email arrives.
+5. Triggers are created by the `setup()` function in step 3 above — nothing
+   more to add.
 
 ## 5. GA4 Enhanced Measurement (file downloads, scroll, outbound clicks)
 
