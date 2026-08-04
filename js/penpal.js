@@ -16,7 +16,9 @@
     if (typeof window.gtag === "function") window.gtag("event", name, params || {});
   }
 
-  /* Section engagement: fire once per section when 50% visible */
+  /* Section engagement: fire once per section when half the section is
+     visible, or (for sections taller than the screen) when the section
+     fills half the viewport. */
   (function sectionViews() {
     if (!("IntersectionObserver" in window)) return;
     var seen = {};
@@ -24,11 +26,13 @@
       entries.forEach(function (entry) {
         var id = entry.target.id;
         if (!entry.isIntersecting || seen[id]) return;
+        var viewportCovered = entry.intersectionRect.height / (window.innerHeight || 1);
+        if (entry.intersectionRatio < 0.5 && viewportCovered < 0.5) return;
         seen[id] = true;
         track("section_view", { section_id: id });
         io.unobserve(entry.target);
       });
-    }, { threshold: 0.5 });
+    }, { threshold: [0.15, 0.5] });
     document.querySelectorAll("main section[id]").forEach(function (s) { io.observe(s); });
   })();
 
