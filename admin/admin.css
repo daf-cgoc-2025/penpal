@@ -15,6 +15,7 @@
   --error:#ff6b6b; --radius:14px; --radius-sm:9px;
 }
 *{box-sizing:border-box}
+[hidden]{display:none !important}
 html,body{margin:0;padding:0}
 body{
   background:var(--bg); color:var(--text);
