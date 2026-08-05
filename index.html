@@ -567,7 +567,13 @@
        by design; write access is constrained by firestore.rules. -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore-lite.js";
+    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-firestore-lite.js";
+    import { initializeAppCheck, ReCaptchaEnterpriseProvider } from "https://www.gstatic.com/firebasejs/12.17.0/firebase-app-check.js";
+
+    // Invisible abuse protection (Firebase App Check + score-based reCAPTCHA
+    // Enterprise — no user interaction). Empty = not yet activated; paste the
+    // reCAPTCHA Enterprise site key here once created (see SETUP.md §6).
+    const APP_CHECK_SITE_KEY = "";
 
     // measurementId intentionally omitted — page analytics use gtag.js above;
     // importing firebase-analytics would double-fire page_views.
@@ -579,13 +585,32 @@
       messagingSenderId: "744994373915",
       appId: "1:744994373915:web:9ae778d54b6073847013be"
     });
+    if (APP_CHECK_SITE_KEY) {
+      initializeAppCheck(app, {
+        provider: new ReCaptchaEnterpriseProvider(APP_CHECK_SITE_KEY),
+        isTokenAutoRefreshEnabled: true
+      });
+    }
     const db = getFirestore(app);
+
+    // Deterministic doc id: one submission per email+role, enforced by the
+    // database (rules deny updates, so a duplicate write can never land).
+    async function intakeDocId(email, role) {
+      const bytes = new TextEncoder().encode(role + "|" + email.trim().toLowerCase());
+      const hash = await crypto.subtle.digest("SHA-256", bytes);
+      return Array.from(new Uint8Array(hash))
+        .map(function (b) { return b.toString(16).padStart(2, "0"); })
+        .join("").slice(0, 32);
+    }
+
     window.penpalFirebase = {
-      submit: function (payload) {
-        return addDoc(
-          collection(db, "penpalIntake"),
+      submit: async function (payload) {
+        const id = await intakeDocId(payload.email, payload.role);
+        await setDoc(
+          doc(db, "penpalIntake", id),
           Object.assign({}, payload, { createdAt: serverTimestamp() })
-        ).then(function (ref) { return { ok: true, id: ref.id }; });
+        );
+        return { ok: true, id: id };
       }
     };
   </script>

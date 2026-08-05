@@ -495,12 +495,21 @@
     submitIntake(payload).then(function () {
       track("sign_up", { method: payload.role });
       showSuccess();
-    }).catch(function () {
+    }).catch(function (err) {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove("is-loading");
+      // The client validates everything before sending, so a rules rejection
+      // here almost always means this email already submitted for this role
+      // (duplicate doc id) — say so kindly instead of erroring.
+      if (err && err.code === "permission-denied") {
+        track("intake_duplicate", { method: payload.role });
+        statusEl.textContent = "It looks like we already have a " + payload.role +
+          " submission for this email — you're all set! To update it, email " + CONFIG.NOTIFY_EMAIL + ".";
+        return;
+      }
       track("intake_fallback", { method: payload.role });
       statusEl.textContent = "Couldn't reach the server — opening your email app as a fallback…";
       mailtoFallback(payload);
-      submitBtn.disabled = false;
-      submitBtn.classList.remove("is-loading");
     });
   });
 

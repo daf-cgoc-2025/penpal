@@ -1,5 +1,10 @@
 # Penpal — one-time setup checklist (Firebase console + Google Sheet)
 
+> **Update 4 Aug 2026 (v2 scripts):** `poller.gs` and `ga4-reports.gs` now send
+> formatted HTML emails instead of raw JSON. If the Apps Script project is
+> already set up, just replace the contents of both files in the editor with
+> the new versions and Save — no re-run of `setup` needed, triggers keep working.
+
 Everything in this list is done signed in as **nationalcgoc@gmail.com** (turn on
 2-Step Verification for this account if it isn't already). No paid plan is
 needed — everything below stays on the free Spark tier, no credit card.
@@ -48,9 +53,26 @@ measurement**: confirm it is ON with *File downloads*, *Scrolls*, and
 *Outbound clicks* enabled (they are on by default). This is what restores the
 old "files downloaded" tracking for the PDFs on the main site — no code needed.
 
-## Escalation (only if spam shows up)
+## 6. Invisible spam protection (App Check) — activate when ready
 
-Honeypot + strict rules handle casual bots. If junk submissions appear:
-create a score-based **reCAPTCHA Enterprise** key for `penpal.dafcgoc.org`
-(free ≤10k assessments/month, no billing) → Firebase console → **App Check**
-→ register the penpal web app → enable enforcement for Firestore.
+Layers already live: honeypot, strict validation rules, and **one submission
+per email+role enforced by the database** (duplicate writes are impossible).
+The final layer is Firebase **App Check** with score-based reCAPTCHA
+Enterprise — completely invisible to users (no puzzles, no clicks), free up
+to 10k checks/month, no billing account needed. To activate:
+
+1. [Cloud console → reCAPTCHA](https://console.cloud.google.com/security/recaptcha?project=dafcgoc)
+   → *Create key* → type **Website**, score-based (do NOT tick "checkbox
+   challenge") → domains: `daf-cgoc-2025.github.io` and `penpal.dafcgoc.org`
+   → create, copy the site key. (Enable the reCAPTCHA Enterprise API if
+   prompted.)
+2. Firebase console → **App Check → Apps** → register the **penpal** web app
+   with that site key (reCAPTCHA Enterprise provider).
+3. Paste the site key into `APP_CHECK_SITE_KEY` in `index.html` (both dev
+   and, at launch, prod) and push.
+4. Watch App Check metrics for a day or two (requests should show as
+   "verified"), then App Check → **APIs → Cloud Firestore → Enforce**.
+
+Do step 4 only after steps 1–3 are confirmed working, or the form will
+reject everyone. If the dashboard is in use, register the same site key for
+it too (it shares the penpal app).
