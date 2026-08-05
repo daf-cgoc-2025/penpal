@@ -24,7 +24,7 @@ const app = initializeApp({
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const SUPERADMINS = ["arkady232@gmail.com", "nationalcgoc@gmail.com"];
+const SUPERADMINS = ["arkady232@gmail.com", "nationalcgoc@gmail.com", "det.nosnibor00@gmail.com"];
 const COLORS = { mentee: "#B08A3E", mentor: "#3E7BD6" };
 const LABELS = {
   usafa: "USAFA", afrotc: "AFROTC", ots: "OTS", direct: "Direct commission", other: "Other",

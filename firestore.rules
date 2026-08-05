@@ -20,7 +20,11 @@ service cloud.firestore {
     // 'responses' | 'analytics' }.
     function isSuper() {
       return request.auth != null &&
-        request.auth.token.email in ['arkady232@gmail.com', 'nationalcgoc@gmail.com'];
+        request.auth.token.email in [
+          'arkady232@gmail.com',
+          'nationalcgoc@gmail.com',
+          'det.nosnibor00@gmail.com'
+        ];
     }
     function viewerPath() {
       return /databases/$(database)/documents/dashboardUsers/$(request.auth.token.email);
