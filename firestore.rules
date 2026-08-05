@@ -18,16 +18,18 @@ service cloud.firestore {
     // Super-admins manage the viewer allowlist; viewers are docs in
     // dashboardUsers keyed by lowercase email with { access: 'both' |
     // 'responses' | 'analytics' }.
-    // NOTE: this public repo copy carries placeholder emails. The DEPLOYED
-    // ruleset (Firebase console → Firestore → Rules, and the untracked
-    // firestore.rules.local) holds the real super-admin allowlist — deployed
-    // rules are not publicly readable.
+    // Super-admins are DATA, not code: a doc per email in dashboardAdmins
+    // (managed in the Firebase console). No emails live in this file.
     function isSuper() {
       return request.auth != null &&
-        request.auth.token.email in [
-          'admin1@example.com',
-          'admin2@example.com'
-        ];
+        exists(/databases/$(database)/documents/dashboardAdmins/$(request.auth.token.email));
+    }
+
+    match /dashboardAdmins/{email} {
+      // an admin may confirm their own entry; the list is edited only in the
+      // Firebase console (client writes always denied)
+      allow get: if request.auth != null && request.auth.token.email == email;
+      allow list, write: if false;
     }
     function viewerPath() {
       return /databases/$(database)/documents/dashboardUsers/$(request.auth.token.email);
