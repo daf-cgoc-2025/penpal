@@ -18,12 +18,15 @@ service cloud.firestore {
     // Super-admins manage the viewer allowlist; viewers are docs in
     // dashboardUsers keyed by lowercase email with { access: 'both' |
     // 'responses' | 'analytics' }.
+    // NOTE: this public repo copy carries placeholder emails. The DEPLOYED
+    // ruleset (Firebase console → Firestore → Rules, and the untracked
+    // firestore.rules.local) holds the real super-admin allowlist — deployed
+    // rules are not publicly readable.
     function isSuper() {
       return request.auth != null &&
         request.auth.token.email in [
-          'arkady232@gmail.com',
-          'nationalcgoc@gmail.com',
-          'det.nosnibor00@gmail.com'
+          'admin1@example.com',
+          'admin2@example.com'
         ];
     }
     function viewerPath() {
