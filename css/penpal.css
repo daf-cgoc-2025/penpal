@@ -401,7 +401,7 @@ em,i{font-family:"merriweather-italic",Georgia,serif;font-style:normal;}
 .form-status.is-success{color:var(--success);}
 
 /* success panel */
-.intake-success{text-align:center;padding:var(--sp-8) var(--sp-6);}
+.intake-success{text-align:center;padding:var(--sp-4) var(--sp-6) var(--sp-6);}
 .intake-success h3{margin:var(--sp-3) 0 .5rem;font-size:var(--fs-h2);}
 .intake-success h3:focus{outline:none;}
 .intake-success p{color:var(--text-2);max-width:44ch;margin:0 auto var(--sp-4);}
@@ -413,6 +413,26 @@ em,i{font-family:"merriweather-italic",Georgia,serif;font-style:normal;}
 .success-check.play .check__tick{animation:draw .3s var(--ease) .55s forwards;}
 @keyframes draw{to{stroke-dashoffset:0;}}
 @keyframes pop{from{opacity:0;transform:scale(.6);}80%{opacity:1;transform:scale(1.06);}to{opacity:1;transform:scale(1);}}
+
+/* ---------- 13b. Partner offer (MOAA), shown after a successful intake ---------- */
+.partner-offer{display:flex;gap:var(--sp-4);text-align:left;align-items:flex-start;
+  max-width:52ch;margin:0 auto var(--sp-6);padding:var(--sp-4) var(--sp-4) var(--sp-4) var(--sp-3);
+  background:linear-gradient(180deg,rgba(62,123,214,.07),rgba(62,123,214,.02));
+  border:1px solid var(--line-2);border-left:3px solid var(--blue);border-radius:var(--radius-sm);}
+.partner-offer__mark{flex:0 0 auto;width:38px;height:38px;border-radius:50%;
+  display:grid;place-items:center;background:var(--blue-soft);color:#9FC1F2;font-size:1rem;margin-top:.15rem;}
+.partner-offer__body{min-width:0;}
+.partner-offer__eyebrow{font-family:"raleway-semibold",sans-serif;font-size:.72rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--text-muted);margin:0 0 .25rem;max-width:none;}
+.partner-offer h4{font-size:1.06rem;margin:0 0 .4rem;color:var(--text);}
+.partner-offer p{font-size:.94rem;color:var(--text-2);margin:0 0 var(--sp-3);max-width:none;}
+.partner-offer__actions{display:flex;flex-wrap:wrap;gap:var(--sp-3);align-items:center;}
+.partner-offer__link{color:var(--text-muted);font-size:.88rem;text-decoration:none;
+  border-bottom:1px solid var(--line-strong);padding-bottom:1px;}
+.partner-offer__link:hover{color:var(--text);border-color:var(--text-2);}
+@media (max-width:520px){
+  .partner-offer{flex-direction:column;gap:var(--sp-3);padding:var(--sp-4);}
+}
 
 /* ---------- 14. FAQ ---------- */
 .faq{margin-top:var(--sp-6);}

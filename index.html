@@ -295,6 +295,35 @@
               </svg>
               <h3>You're in.</h3>
               <p id="intake-success-msg">Thanks, your intake is recorded. We'll be in touch to make your match.</p>
+
+              <!-- Partner offer: free MOAA basic membership -->
+              <aside class="partner-offer" aria-labelledby="moaa-offer-title">
+                <div class="partner-offer__mark" aria-hidden="true">
+                  <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="partner-offer__body">
+                  <p class="partner-offer__eyebrow">One more thing &mdash; free for you</p>
+                  <h4 id="moaa-offer-title">Activate your free MOAA membership</h4>
+                  <p>
+                    The DAF CGOC has partnered with the Military Officers Association of America
+                    to give you resources as you start your career as an officer. Basic membership
+                    is free and open to junior and senior cadets and commissioned officers. It
+                    keeps you current on the pay, health care, and retirement benefits you have
+                    earned, and on the issues affecting the Airmen and Guardians you will lead.
+                  </p>
+                  <div class="partner-offer__actions">
+                    <a class="btn btn--gold btn--sm" id="moaa-cta"
+                       href="https://www.moaa.org/dafcgoc" target="_blank" rel="noopener">
+                      Activate free membership
+                    </a>
+                    <a class="partner-offer__link" id="moaa-learn"
+                       href="https://dafcgoc.org/pages/moaa.html" target="_blank" rel="noopener">
+                      Learn about the partnership
+                    </a>
+                  </div>
+                </div>
+              </aside>
+
               <button type="button" class="btn btn--ghost" id="intake-again">Submit another</button>
             </div>
 
@@ -528,6 +557,13 @@
             </div></div>
           </details>
           <details name="faq">
+            <summary>Does this come with anything else?<span class="faq__icon" aria-hidden="true"></span></summary>
+            <div class="faq__panel"><div class="faq__inner">
+              After you sign up we'll point you to a free basic membership with the Military Officers Association of America, a DAF CGOC partner. It is open to junior and senior cadets and to commissioned officers, it costs nothing, and it keeps you current on the benefits and legislation that affect you and the Airmen and Guardians you will lead.
+              <a id="moaa-faq-link" href="https://dafcgoc.org/pages/moaa.html" target="_blank" rel="noopener">More about MOAA and the partnership</a>.
+            </div></div>
+          </details>
+          <details name="faq">
             <summary>What happens to my information?<span class="faq__icon" aria-hidden="true"></span></summary>
             <div class="faq__panel"><div class="faq__inner">
               Your information is used only to match you within the DAF CGOC Mentorship Program. Submissions go into a protected database that is not publicly accessible, and they are visible only to DAF CGOC Executive Council program administrators and, once you are matched, to your mentor or mentee. Your information is never sold, shared outside the program, or published, and you can request an update or removal at any time by contacting the council.
@@ -613,6 +649,7 @@
       }
     };
   </script>
+  <script src="js/analytics.js" defer></script>
   <script src="js/penpal.js" defer></script>
 </body>
 </html>

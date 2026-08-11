@@ -29,10 +29,17 @@ visitor ──► index.html (static, GitHub Pages)
 - **Free tier**: everything runs on Firebase Spark + consumer Google — no
   Cloud Functions, no billing account.
 - **Analytics**: every page is dual-tagged so hits land in both the sitewide
-  GA property and the Firebase console dashboards. `js/penpal.js` also sends
-  custom events (`section_view`, `audience_toggle`, `sign_up`,
-  `intake_fallback`) — never any PII. Weekly/monthly summary emails come from
-  `apps-script/ga4-reports.gs`.
+  GA property and the Firebase console dashboards. `js/analytics.js` (shared
+  with dafcgoc.org) tracks interactions; `js/penpal.js` adds intake-specific
+  events. Never any PII. Weekly/monthly summary emails come from
+  `apps-script/ga4-reports.gs`. See "Analytics events" below.
+- **MOAA partnership**: after a successful intake the success panel offers a
+  free MOAA basic membership (`moaa.org/dafcgoc`, the council's own landing
+  page), with a matching FAQ entry. Every MOAA touchpoint fires a
+  `partner_click` event so the council can report referral volume at renewal.
+  Note the MOAA vanity URL 302-redirects to `pages.moaa.org` and **drops query
+  parameters**, so UTM tags on it are lost; attribution relies on the landing
+  page being council-specific.
 
 ## Files
 
@@ -41,15 +48,60 @@ visitor ──► index.html (static, GitHub Pages)
 | `index.html` | The whole page: head (gtag, meta), all sections, Firebase init at the bottom |
 | `css/penpal.css` | All page styling (design tokens at the top: colors, spacing) |
 | `css/fonts.css` + `fonts/` | Self-hosted Raleway/Merriweather |
-| `js/penpal.js` | Interactivity: audience toggle, form branching/validation, submission, analytics events |
+| `js/penpal.js` | Interactivity: audience toggle, form branching/validation, submission, intake events |
+| `js/analytics.js` | Shared engagement tracking (identical copy lives in the main site repo) |
+| `admin/` | Program dashboard: Google sign-in, responses, charts, PDF report |
 | `firestore.rules` | Source of truth for the Firestore rules published in the console |
 | `apps-script/` | Poller (Sheet + email), GA4 report emails, manifest — pasted into script.google.com per `SETUP.md` |
 | `SETUP.md` | One-time console setup checklist |
 
+## Analytics events
+
+`js/analytics.js` is a drop-in shared module: the same file sits in this repo
+and in the main site repo, and every page already loads it. It sends these,
+all PII-free (labels and destinations only, never form contents):
+
+| Event | When | Key parameters |
+|---|---|---|
+| `click_element` | any button, link, or `<summary>` click | `element_text`, `element_id`, `link_url`, `link_domain`, `link_type` (internal/outbound/download/email/phone/anchor), `page_area` (nav/hero/card/form/footer/body), `section_id` |
+| `partner_click` | MOAA / USAA / DEFO links, outbound **and** internal partner pages | `partner`, `placement`, `link_url` |
+| `penpal_referral` | any click heading to penpal.dafcgoc.org | `placement`, `element_text` |
+| `file_download` | PDF/doc/spreadsheet links | `file_name`, `file_extension` |
+| `section_view` | first time a section or card is half seen | `section_id` |
+| `section_time` | on exit: seconds actually spent per section | `section_id`, `seconds` |
+| `scroll_depth` | 25 / 50 / 75 / 90 / 100 percent | `percent_scrolled` |
+| `page_engagement` | on exit: active seconds (idle over 30s not counted) | `seconds`, `percent_scrolled` |
+
+Intake-specific events from `js/penpal.js`: `audience_toggle`, `sign_up`
+(param `method` = mentee/mentor), `intake_duplicate`, `intake_fallback`.
+
+Sections and cards without an `id` are labelled by their heading text, so each
+opportunity card and each FAQ item reports individually.
+
+**To see the detail in GA4**, register these as custom dimensions (GA Admin →
+Custom definitions → Create custom dimension, scope Event): `element_text`,
+`section_id`, `page_area`, `link_url`, `placement`, `partner`. Until then GA
+records the events but only shows counts, not the labels. A cap of 250 events
+per page view guards the free-tier quota.
+
 ## Making changes
 
 - **Copy/sections**: edit `index.html` directly; push to `main` here (dev),
-  verify at the Pages URL, then push the same commit to the prod repo.
+  verify at the Pages URL, then carry to prod (below).
+- **Deploying dev → prod**: the two repos share history, so a plain merge
+  works. **Always confirm `CNAME` still contains `penpal.dafcgoc.org` in the
+  prod tree before pushing** — dev deliberately has no CNAME (only one Pages
+  site may claim a domain), and that deletion will otherwise ride along and
+  take the custom domain down:
+  ```
+  git clone https://github.com/dafcogc-penpal/penpal prod && cd prod
+  git remote add dev <path-or-url-of-dev-repo> && git fetch dev main
+  git merge dev/main
+  echo penpal.dafcgoc.org > CNAME && git add CNAME && git commit -m "Restore CNAME"
+  git push origin main
+  ```
+- **Analytics changes**: edit `js/analytics.js` here, then copy the identical
+  file into the main site repo (`js/analytics.js`) so both stay in sync.
 - **Form fields**: three places must stay in sync — the field in
   `index.html`, `buildPayload()` in `js/penpal.js`, and the matching
   validation line in `firestore.rules` (re-publish rules in the console after
