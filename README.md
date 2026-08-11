@@ -66,7 +66,7 @@ all PII-free (labels and destinations only, never form contents):
 | `click_element` | any button, link, or `<summary>` click | `element_text`, `element_id`, `link_url`, `link_domain`, `link_type` (internal/outbound/download/email/phone/anchor), `page_area` (nav/hero/card/form/footer/body), `section_id` |
 | `partner_click` | MOAA / USAA / DEFO links, outbound **and** internal partner pages | `partner`, `placement`, `link_url` |
 | `penpal_referral` | any click heading to penpal.dafcgoc.org | `placement`, `element_text` |
-| `file_download` | PDF/doc/spreadsheet links | `file_name`, `file_extension` |
+| *(file downloads)* | handled by GA4 Enhanced Measurement's own `file_download`; we only label the click (`link_type=download`, `file_name`, `file_extension`) so we never double-count | — |
 | `section_view` | first time a section or card is half seen | `section_id` |
 | `section_time` | on exit: seconds actually spent per section | `section_id`, `seconds` |
 | `scroll_depth` | 25 / 50 / 75 / 90 / 100 percent | `percent_scrolled` |
@@ -78,11 +78,36 @@ Intake-specific events from `js/penpal.js`: `audience_toggle`, `sign_up`
 Sections and cards without an `id` are labelled by their heading text, so each
 opportunity card and each FAQ item reports individually.
 
-**To see the detail in GA4**, register these as custom dimensions (GA Admin →
-Custom definitions → Create custom dimension, scope Event): `element_text`,
-`section_id`, `page_area`, `link_url`, `placement`, `partner`. Until then GA
-records the events but only shows counts, not the labels. A cap of 250 events
-per page view guards the free-tier quota.
+**To see the detail in GA4**, register custom definitions (GA Admin → Custom
+definitions, scope Event). Parameter names are case-sensitive, registration is
+not retroactive, and data takes 24–48 hours to appear.
+
+Custom **dimensions** to create:
+
+| Dimension name | Event parameter | Description to paste |
+|---|---|---|
+| Element label | `element_text` | Visible text (or aria-label) of the button or link that was clicked, e.g. "Activate free membership". |
+| Section | `section_id` | Section or card the interaction happened in. Uses the section's id, or its heading text for cards, e.g. "AFA Project Officer". |
+| Page area | `page_area` | Region of the page: nav, hero, card, form, footer, or body. |
+| Link type | `link_type` | Destination class of a clicked link: internal, outbound, download, email, phone, or anchor. |
+| Placement | `placement` | Where a partner or penpal referral link was clicked, e.g. "moaa-cta", "moaa-faq-link". |
+| Partner | `partner` | Partner organization credited with a referral click: MOAA, USAA, or DEFO. |
+| Element ID | `element_id` | HTML id of the clicked element, when it has one. Useful for pinning down a specific button. |
+| Sign-up role | `method` | Which side of the program signed up: mentee or mentor. |
+
+Custom **metric** to create (scope Event, unit Standard):
+
+| Metric name | Event parameter | Description to paste |
+|---|---|---|
+| Engaged seconds | `seconds` | Seconds of active attention. On `section_time` it is time spent on one section; on `page_engagement` it is total active time on the page, idle periods over 30 seconds excluded. |
+
+Already built in, do **not** create these: `link_url`, `link_domain`,
+`file_name`, `file_extension`, `percent_scrolled` (GA4 predefined dimensions),
+and `page_path` (covered by the built-in page dimensions). Register them only
+if a Looker Studio report needs them, since the property is capped at 50
+event-scoped custom dimensions.
+
+A cap of 250 events per page view guards the free-tier quota.
 
 ## Making changes
 
