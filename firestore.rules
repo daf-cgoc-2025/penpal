@@ -74,18 +74,20 @@ service cloud.firestore {
     // Mentor/mentee pairings. Kept separate from penpalIntake so the
     // submissions themselves stay immutable: program staff manage matches
     // without ever being able to alter what someone submitted.
+    // Read and delete are kept in their own statements: request.resource does
+    // not exist on those requests, and touching it there errors the whole rule
+    // (which silently denies reads).
     match /matches/{matchId} {
-      allow read, create, update, delete: if canView(['responses', 'both'])
-        && (request.method == 'delete' || (
-          request.resource.data.keys().hasOnly([
-            'menteeId', 'mentorId', 'menteeName', 'mentorName',
-            'status', 'matchedAt', 'notes', 'updatedBy', 'updatedAt'
-          ])
-          && request.resource.data.status in ['in_progress', 'matched', 'ended']
-          && request.resource.data.menteeId is string
-          && request.resource.data.mentorId is string
-          && (!('notes' in request.resource.data) || request.resource.data.notes.size() <= 1000)
-        ));
+      allow read, delete: if canView(['responses', 'both']);
+      allow create, update: if canView(['responses', 'both'])
+        && request.resource.data.keys().hasOnly([
+             'menteeId', 'mentorId', 'menteeName', 'mentorName',
+             'status', 'matchedAt', 'notes', 'updatedBy', 'updatedAt'
+           ])
+        && request.resource.data.status in ['in_progress', 'matched', 'ended']
+        && request.resource.data.menteeId is string
+        && request.resource.data.mentorId is string
+        && (!('notes' in request.resource.data) || request.resource.data.notes.size() <= 1000);
     }
 
     match /penpalIntake/{docId} {

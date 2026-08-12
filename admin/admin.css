@@ -244,23 +244,50 @@ button{font:inherit;cursor:pointer}
 .matchbox textarea{width:100%; resize:vertical; min-height:56px; font-size:14px}
 .matchbox .hint{font-size:13px; color:var(--text-muted)}
 .cand-why{color:var(--gold)}
+.pairing{border-top:1px solid var(--line-2); margin-top:12px; padding-top:12px}
+.pairing:first-of-type{border-top:0}
+
+/* side-by-side comparison while choosing a match */
+.cmp{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px}
+.cmp__col{background:var(--surface-1); border:1px solid var(--line-2);
+  border-radius:var(--radius-sm); padding:12px 14px}
+.cmp__head{display:flex; flex-direction:column; align-items:flex-start; gap:6px; margin-bottom:10px}
+.cmp__head b{font-size:15px}
+/* must out-specify `dialog.detail dl`, which is a two-column layout */
+dialog.detail .cmp__dl{margin:0; display:grid; grid-template-columns:1fr; gap:2px 0}
+dialog.detail .cmp__dl dt{margin-top:8px}
+dialog.detail .cmp__dl dt:first-child{margin-top:0}
+.cmp__dl dt{font-size:12px; font-weight:600; letter-spacing:.05em;
+  text-transform:uppercase; color:var(--text-muted)}
+.cmp__dl dd{margin:0 0 2px; font-size:13.5px; color:var(--text-2); overflow-wrap:anywhere}
+.cmp__signals{list-style:none; margin:12px 0 0; padding:0; display:grid; gap:7px}
+.cmp__signals li{display:flex; gap:9px; align-items:flex-start; font-size:13.5px; color:var(--text-2)}
+.cmp__signals b{color:var(--text)}
+.sig-mark{flex:0 0 auto; width:20px; height:20px; border-radius:50%; display:grid;
+  place-items:center; font-size:12px; font-weight:700; margin-top:1px}
+.sig-yes .sig-mark{background:#12281E; color:#74E4A8}
+.sig-part .sig-mark{background:#2A2317; color:#E8CE93}
+.sig-no .sig-mark{background:#1C2436; color:#AAB5CD}
+@media (max-width:640px){ .cmp{grid-template-columns:1fr} }
 @media (max-width:640px){ .matchbox__grid{grid-template-columns:1fr} }
 
 /* ---- detail dialog (native <dialog>: top layer, inert bg, Esc, focus) ---- */
 dialog.detail{
   border:1px solid var(--control-border); background:var(--surface-1); color:var(--text);
-  border-radius:var(--radius); padding:0; max-width:640px; width:calc(100% - 32px);
+  border-radius:var(--radius); padding:0; max-width:780px; width:calc(100% - 32px);
   max-height:min(90vh,calc(100vh - 96px)); overflow:hidden;
   box-shadow:0 0 0 1px rgba(189,189,189,.12), 0 18px 50px rgba(0,0,0,.6);
 }
 dialog.detail::backdrop{background:rgba(5,12,31,.62)}
+dialog.detail[open]{display:flex; flex-direction:column}
 .detail__head{
+  flex:0 0 auto;
   display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
   padding:22px 26px 12px; border-bottom:1px solid var(--line-2);
 }
 .detail__head h2{font-size:20px; line-height:1.3}
 .detail__head h2:focus-visible{outline:2px solid var(--focus); outline-offset:4px}
-.detail__body{padding:18px 26px 26px; overflow:auto; max-height:calc(90vh - 96px)}
+.detail__body{flex:1 1 auto; min-height:0; overflow:auto; padding:18px 26px 26px}
 .detail__close{
   background:none; border:1px solid transparent; color:var(--text-muted);
   font-size:22px; line-height:1; min-width:32px; min-height:32px; border-radius:8px;
