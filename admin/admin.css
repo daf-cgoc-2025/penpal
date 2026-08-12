@@ -1,163 +1,285 @@
 /* ============================================================
    DAF CGOC Mentorship — Admin dashboard
    Shares the penpal design language (navy surfaces, matte gold).
-   Chart data marks use the validated dark-mode pair:
-     mentee #B08A3E · mentor #3E7BD6  (brand gold #DBB65E = UI accents only)
+
+   Colour and type values here are chosen against WCAG 2.2 AA and
+   measured, not eyeballed:
+     - body text >= 4.5:1 on EVERY surface, including the lightest
+     - control borders, focus rings and chart marks >= 3:1
+     - status pill text >= 4.5:1 against the pill's own fill
+   Type scale: 11 / 12 / 13 / 14 / 16 / 20 / 24 / 32 px.
+   11px is used only for chart tick labels, at weight 500.
    ============================================================ */
 :root{
   --bg:#070B14; --bg-2:#0A1120;
   --surface-1:#111A2B; --surface-2:#17233B; --surface-3:#20304C;
+  --row-hover:#1A2438;
+
+  /* decorative dividers (exempt from contrast rules) */
   --line:rgba(180,200,255,.07); --line-2:rgba(180,200,255,.12);
-  --line-strong:rgba(180,200,255,.18);
-  --gold:#DBB65E; --gold-soft:rgba(219,182,94,.12); --on-gold:#141007;
-  --c-mentee:#B08A3E; --c-mentor:#3E7BD6;
-  --text:#EEF2FB; --text-2:#B8C2D9; --muted:#8592AC;
-  --error:#ff6b6b; --radius:14px; --radius-sm:9px;
+  /* boundaries that identify a control: >= 3:1 */
+  --field-border:#565F79; --control-border:#5B6581; --ghost-border:#545D76;
+
+  --gold:#DBB65E; --gold-soft:rgba(219,182,94,.14); --on-gold:#141007;
+  --blue:#3E7BD6;            /* fills, chart marks, focus rings (3:1) */
+  --blue-text:#55A8FF;       /* blue as text or link (4.5:1) */
+  --c-mentee:#B08A3E; --c-mentor:#3E7BD6;   /* validated categorical pair */
+
+  --text:#EEF2FB; --text-2:#B8C2D9; --text-muted:#92A0BC; --text-faint:#8A97B2;
+  --text-decor:#5C6880;      /* decorative marks only, never text */
+  --error:#ff6b6b;
+
+  --radius:14px; --radius-sm:9px;
+  --focus:var(--gold);
+  --row-h:40px;
 }
 *{box-sizing:border-box}
 [hidden]{display:none !important}
+html{scroll-padding-top:120px}          /* sticky headers must not hide focus (2.4.11) */
 html,body{margin:0;padding:0}
 body{
   background:var(--bg); color:var(--text);
   font-family:'raleway-regular',Helvetica,Arial,sans-serif;
-  font-size:15px; line-height:1.5; min-height:100vh;
+  font-size:14px; line-height:1.45; min-height:100vh;
+  -webkit-font-smoothing:antialiased;
 }
-h1,h2,h3{font-family:'raleway-bold',Helvetica,Arial,sans-serif; font-weight:400; margin:0}
-button{font:inherit; cursor:pointer}
-.mono{font-family:Menlo,Consolas,monospace; font-size:.92em}
+h1,h2,h3,h4{font-family:'raleway-bold',Helvetica,Arial,sans-serif;font-weight:400;margin:0}
+button{font:inherit;cursor:pointer}
+.mono,.tnum{font-variant-numeric:tabular-nums lining-nums}
+
+/* visible focus everywhere (2.4.7 / 1.4.11) */
+:where(a,button,select,input,textarea,summary,[tabindex]):focus-visible{
+  outline:2px solid var(--focus); outline-offset:2px; border-radius:4px;
+}
+
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
 
 /* ---- top bar ---- */
 .bar{
   display:flex; align-items:center; justify-content:space-between; gap:16px;
-  padding:14px 22px; background:rgba(10,17,32,.92);
+  padding:12px 22px; background:var(--bg-2);
   border-bottom:1px solid var(--line-2); position:sticky; top:0; z-index:20;
 }
-.bar__brand{display:flex; align-items:center; gap:12px; letter-spacing:.14em;
-  text-transform:uppercase; font-size:12px; color:var(--text-2)}
+.bar__brand{display:flex; align-items:center; gap:12px; letter-spacing:.12em;
+  text-transform:uppercase; font-size:12px; font-weight:600; color:var(--text-2)}
 .bar__brand em{color:var(--gold); font-style:normal}
 .bar__brand img{display:block}
 .bar__user{display:flex; align-items:center; gap:12px}
-.bar__email{color:var(--muted); font-size:13px}
+.bar__email{color:var(--text-muted); font-size:13px}
 
-/* ---- buttons ---- */
+/* ---- buttons: 32px min height, 24px min target (2.5.8) ---- */
 .btn{
-  display:inline-flex; align-items:center; gap:9px; border:0;
-  border-radius:999px; padding:10px 20px; font-size:14px;
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  border:1px solid transparent; border-radius:999px;
+  min-height:40px; padding:0 20px; font-size:14px; font-weight:600;
   font-family:'raleway-semibold',Helvetica,Arial,sans-serif;
 }
 .btn--gold{background:var(--gold); color:var(--on-gold)}
 .btn--gold:hover{filter:brightness(1.07)}
-.btn--ghost{background:transparent; color:var(--text-2); border:1px solid var(--line-strong)}
+.btn--ghost{background:transparent; color:var(--text-2); border-color:var(--ghost-border)}
 .btn--ghost:hover{color:var(--text); border-color:var(--text-2)}
-.btn--sm{padding:7px 15px; font-size:13px}
-.btn--danger{background:transparent; border:1px solid rgba(255,107,107,.4); color:var(--error)}
+.btn--sm{min-height:32px; padding:0 14px; font-size:13px}
+.btn--danger{background:transparent; border-color:rgba(255,107,107,.55); color:#ff9b9b}
+.btn--danger:hover{border-color:var(--error); color:var(--error)}
 
 /* ---- gates ---- */
 .gate{display:grid; place-items:center; min-height:calc(100vh - 130px); padding:30px 18px}
 .gate__card{
-  max-width:430px; text-align:center; background:var(--surface-1);
+  max-width:440px; text-align:center; background:var(--surface-1);
   border:1px solid var(--line-2); border-radius:var(--radius); padding:44px 38px;
 }
 .gate__card h1{font-size:24px; margin-bottom:10px}
-.gate__card p{color:var(--text-2); margin:0 0 24px}
-.gate__err{color:var(--error); font-size:13px; margin-top:16px}
+.gate__card p{color:var(--text-2); margin:0 0 24px; font-size:14px}
+.gate__err{color:#ff9b9b; font-size:13px; margin-top:16px}
 .gate .btn--gold svg{background:#0E1116; border-radius:50%; padding:3px}
 
 /* ---- layout ---- */
-.wrap{max-width:1120px; margin:0 auto; padding:26px 22px 70px}
-.tabs{display:flex; align-items:center; gap:6px; margin-bottom:24px; flex-wrap:wrap}
+.wrap{max-width:1180px; margin:0 auto; padding:24px 22px 80px}
+.tabs{display:flex; align-items:center; gap:6px; margin-bottom:22px; flex-wrap:wrap}
 .tabs__spacer{flex:1}
 .tab{
-  background:transparent; border:1px solid transparent; color:var(--muted);
-  padding:8px 16px; border-radius:999px; font-size:14px;
+  background:transparent; border:1px solid transparent; color:var(--text-muted);
+  min-height:36px; padding:0 16px; border-radius:999px; font-size:14px; font-weight:600;
   font-family:'raleway-semibold',Helvetica,Arial,sans-serif;
 }
 .tab:hover{color:var(--text)}
 .tab.is-active{background:var(--surface-2); color:var(--text); border-color:var(--line-2)}
 
-/* ---- stat tiles ---- */
-.tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:22px}
+/* ---- stat tiles: number 32px, label 12px (ratio ~2.6x) ---- */
+.tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:22px}
 .tile{
   background:var(--surface-1); border:1px solid var(--line-2);
-  border-radius:var(--radius-sm); padding:16px 18px 13px;
+  border-radius:var(--radius-sm); padding:16px 18px 14px; min-height:92px;
 }
-.tile b{display:block; font-size:27px; font-family:'raleway-bold',Helvetica,Arial,sans-serif; line-height:1.15}
-.tile span{color:var(--muted); font-size:12px; letter-spacing:.06em; text-transform:uppercase}
+.tile b{
+  display:block; font-size:32px; line-height:1.15; letter-spacing:-.01em;
+  font-family:'raleway-bold',Helvetica,Arial,sans-serif;
+  font-variant-numeric:tabular-nums lining-nums;
+}
+.tile span{
+  display:block; color:var(--text-muted); font-size:12px; font-weight:600;
+  letter-spacing:.06em; text-transform:uppercase; margin-top:4px;
+}
 
-/* ---- charts ---- */
-.charts{display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:14px}
+/* ---- charts ----
+   SVGs use a viewBox, so text would scale with the container. --cs is set
+   per chart from viewBoxWidth / clientWidth so labels hold their real size. */
+.charts{display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:14px}
 .chart{
   background:var(--surface-1); border:1px solid var(--line-2);
-  border-radius:var(--radius-sm); padding:16px 18px 12px; min-width:0;
+  border-radius:var(--radius-sm); padding:16px 18px 14px; min-width:0; --cs:1;
 }
-.chart h3{font-size:13.5px; letter-spacing:.05em; color:var(--text-2); margin-bottom:4px}
-.chart .legend{display:flex; gap:14px; font-size:11.5px; color:var(--muted); margin-bottom:8px}
-.legend i{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px}
-.chart svg{display:block; width:100%; height:auto}
-.chart svg text{font-family:'raleway-regular',Helvetica,Arial,sans-serif}
-.bar-hit{cursor:default}
-.bar-hit:hover rect.mark{filter:brightness(1.15)}
+.chart h3{font-size:16px; font-weight:600; line-height:1.35; margin-bottom:2px;
+  font-family:'raleway-bold',Helvetica,Arial,sans-serif}
+.chart .legend{display:flex; gap:14px; font-size:12px; color:var(--text-muted); margin:6px 0 10px}
+.legend i{display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px}
+.chart svg{display:block; width:100%; height:auto; overflow:visible}
+.chart svg text{font-family:'raleway-regular',Helvetica,Arial,sans-serif;
+  font-variant-numeric:tabular-nums lining-nums}
+.chart svg .t-cat{font-size:calc(12px * var(--cs)); fill:var(--text-2)}
+.chart svg .t-val{font-size:calc(12px * var(--cs)); font-weight:600; fill:var(--text-2)}
+.chart svg .t-tick{font-size:calc(11px * var(--cs)); font-weight:500; fill:var(--text-faint)}
+.bar-hit:hover rect.mark{filter:brightness(1.18)}
 
 .tooltip{
   position:fixed; z-index:60; pointer-events:none; background:#0E1116;
-  border:1px solid var(--line-strong); border-radius:7px; padding:6px 10px;
-  font-size:12px; color:var(--text); box-shadow:0 6px 18px rgba(0,0,0,.5);
+  border:1px solid var(--control-border); border-radius:7px; padding:7px 11px;
+  font-size:13px; color:var(--text); box-shadow:0 6px 18px rgba(0,0,0,.55);
 }
 
-/* ---- filters + tables ---- */
+/* ---- filters ---- */
 .filters{display:flex; gap:10px; align-items:center; margin-bottom:14px; flex-wrap:wrap}
-.filters select,.filters input,.addviewer select,.addviewer input{
-  background:#0A101C; border:1px solid rgba(180,200,255,.16); color:var(--text);
-  border-radius:8px; padding:8px 12px; font:inherit; font-size:14px;
+.filters select,.filters input,
+.matchbox select,.matchbox input,.matchbox textarea,
+.addviewer select,.addviewer input{
+  background:#0A101C; border:1px solid var(--field-border); color:var(--text);
+  border-radius:8px; min-height:40px; padding:8px 12px; font:inherit; font-size:14px;
 }
-.filters input{flex:1; min-width:200px}
-.filters__count{color:var(--muted); font-size:13px}
+.filters input{flex:1; min-width:220px}
+.filters__count{color:var(--text-muted); font-size:13px}
+
+/* ---- tables ---- */
 .tablewrap{overflow-x:auto; border:1px solid var(--line-2); border-radius:var(--radius-sm)}
-.rtable{width:100%; border-collapse:collapse; font-size:13.5px; min-width:640px}
+.rtable{width:100%; border-collapse:collapse; font-size:14px; min-width:720px}
+.rtable caption{text-align:left; padding:0 0 8px; color:var(--text-muted); font-size:13px}
 .rtable th{
-  text-align:left; padding:10px 14px; background:var(--surface-2); color:var(--text-2);
-  font-family:'raleway-semibold',Helvetica,Arial,sans-serif; font-weight:400;
-  font-size:11.5px; letter-spacing:.08em; text-transform:uppercase;
+  position:sticky; top:0; z-index:2;
+  text-align:left; padding:8px 16px; min-height:var(--row-h);
+  background:var(--surface-2);           /* opaque: never translucent when sticky */
+  color:var(--text-2); font-weight:600; font-size:13px;
+  letter-spacing:.08em; text-transform:uppercase;
+  font-family:'raleway-semibold',Helvetica,Arial,sans-serif;
+  border-bottom:1px solid var(--line-2); white-space:nowrap;
 }
-.rtable td{padding:9px 14px; border-top:1px solid var(--line)}
-.rtable tbody tr{cursor:pointer}
-.rtable tbody tr:hover{background:var(--surface-2)}
-#vtable tbody tr{cursor:default}
+.rtable th.num,.rtable td.num{text-align:right; font-variant-numeric:tabular-nums lining-nums}
+.rtable td{padding:8px 16px; border-top:1px solid var(--line); vertical-align:middle}
+.rtable tbody tr{min-height:var(--row-h)}
+.rtable tbody tr:hover{background:var(--row-hover)}
+.rtable tbody tr:hover td{color:var(--text)}   /* lighten text on hover, not just bg */
+.rtable td:first-child{color:var(--text-2)}
+
+/* sortable headers: a real button, glyph always visible */
+.th-sort{
+  display:inline-flex; align-items:center; gap:6px; background:none; border:0;
+  color:inherit; font:inherit; letter-spacing:inherit; text-transform:inherit;
+  padding:6px 0; min-height:28px;
+}
+.th-sort .caret{color:var(--text-decor); font-size:10px; line-height:1}
+.rtable th[aria-sort] .caret{color:var(--gold)}
+.th-sort:hover .caret{color:var(--text-2)}
+
+/* the primary cell carries a real control, so keyboard users have a target */
+.rowlink{
+  background:none; border:0; padding:0; color:var(--text); font:inherit;
+  font-weight:600; text-align:left; text-decoration:underline;
+  text-decoration-color:var(--line-2); text-underline-offset:3px; min-height:24px;
+}
+.rowlink:hover{text-decoration-color:var(--gold)}
+
+/* ---- status pills: text >= 4.5:1 on the pill's own fill; label carries meaning ---- */
 .pill{
-  display:inline-block; padding:2px 10px; border-radius:999px; font-size:11.5px;
-  letter-spacing:.04em;
+  display:inline-flex; align-items:center; min-height:24px; padding:0 10px;
+  border-radius:16px; font-size:12px; font-weight:600; letter-spacing:.02em;
+  white-space:nowrap;
 }
-.pill--mentee{background:rgba(176,138,62,.18); color:#E3C787}
-.pill--mentor{background:rgba(62,123,214,.18); color:#9FC1F2}
-.note{color:var(--muted); font-size:13px; margin-top:14px}
+.pill--mentee{background:#2A2317; color:#E8CE93}
+.pill--mentor{background:#16233B; color:#A9C8F5}
+.pill--unmatched{background:#1C2436; color:#AAB5CD}
+.pill--in_progress{background:#2A2317; color:#E8CE93}
+.pill--matched{background:#12281E; color:#74E4A8}
+.pill--ended{background:#2E1A1C; color:#FFAEAE}
+
+.note{color:var(--text-muted); font-size:13px; margin-top:14px}
+
+/* ---- empty states: "nothing yet" and "filtered to nothing" are different ---- */
+.empty{
+  text-align:center; padding:34px 24px; color:var(--text-2);
+  border:1px dashed var(--line-2); border-radius:var(--radius-sm); margin-top:12px;
+}
+.empty h3{font-size:16px; margin-bottom:6px}
+.empty p{margin:0 auto 14px; max-width:46ch; font-size:14px; color:var(--text-muted)}
 
 .addviewer{display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap}
 .addviewer input{flex:1; min-width:220px}
 
-/* ---- detail overlay ---- */
-.overlay{
-  position:fixed; inset:0; z-index:50; background:rgba(4,7,14,.7);
-  display:grid; place-items:center; padding:20px; backdrop-filter:blur(3px);
+/* ---- match panel ---- */
+.matchbox{
+  background:var(--surface-2); border:1px solid var(--line-2);
+  border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:18px;
 }
-.overlay__card{
-  background:var(--surface-1); border:1px solid var(--line-strong);
-  border-radius:var(--radius); max-width:560px; width:100%; max-height:84vh;
-  overflow:auto; padding:30px 34px; position:relative;
+.matchbox__head{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap}
+.matchbox__title{font-size:12px; font-weight:600; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--text-muted)}
+.matchbox__who{font-size:15px; margin:8px 0 2px; color:var(--text)}
+.matchbox__meta{font-size:13px; color:var(--text-muted)}
+.matchbox__grid{
+  display:grid; grid-template-columns:minmax(200px,1.4fr) 160px 170px; gap:10px;
+  align-items:end; margin-top:12px;
 }
-.overlay__close{
-  position:absolute; top:12px; right:14px; background:none; border:0;
-  color:var(--muted); font-size:26px; line-height:1;
+.matchbox__row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px}
+.matchbox select,.matchbox input{width:100%}
+.matchbox textarea{width:100%; resize:vertical; min-height:56px; font-size:14px}
+.matchbox .hint{font-size:13px; color:var(--text-muted)}
+.cand-why{color:var(--gold)}
+@media (max-width:640px){ .matchbox__grid{grid-template-columns:1fr} }
+
+/* ---- detail dialog (native <dialog>: top layer, inert bg, Esc, focus) ---- */
+dialog.detail{
+  border:1px solid var(--control-border); background:var(--surface-1); color:var(--text);
+  border-radius:var(--radius); padding:0; max-width:640px; width:calc(100% - 32px);
+  max-height:min(90vh,calc(100vh - 96px)); overflow:hidden;
+  box-shadow:0 0 0 1px rgba(189,189,189,.12), 0 18px 50px rgba(0,0,0,.6);
 }
-.overlay__close:hover{color:var(--text)}
-.overlay__card h2{font-size:19px; margin-bottom:16px}
-.overlay__card dl{margin:0; display:grid; grid-template-columns:170px 1fr; gap:7px 14px; font-size:14px}
-.overlay__card dt{color:var(--muted)}
-.overlay__card dd{margin:0; overflow-wrap:anywhere}
+dialog.detail::backdrop{background:rgba(5,12,31,.62)}
+.detail__head{
+  display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+  padding:22px 26px 12px; border-bottom:1px solid var(--line-2);
+}
+.detail__head h2{font-size:20px; line-height:1.3}
+.detail__head h2:focus-visible{outline:2px solid var(--focus); outline-offset:4px}
+.detail__body{padding:18px 26px 26px; overflow:auto; max-height:calc(90vh - 96px)}
+.detail__close{
+  background:none; border:1px solid transparent; color:var(--text-muted);
+  font-size:22px; line-height:1; min-width:32px; min-height:32px; border-radius:8px;
+}
+.detail__close:hover{color:var(--text); border-color:var(--ghost-border)}
+dialog.detail dl{margin:0; display:grid; grid-template-columns:180px 1fr; gap:8px 14px; font-size:14px}
+dialog.detail dt{color:var(--text-muted)}
+dialog.detail dd{margin:0; overflow-wrap:anywhere}
+@media (max-width:600px){
+  dialog.detail{width:100%; max-width:none; height:100%; max-height:100%; border-radius:0}
+  dialog.detail dl{grid-template-columns:1fr; gap:2px 0}
+  dialog.detail dt{margin-top:10px}
+}
+html:has(dialog[open]){overflow:hidden}
 
 .loading{
   position:fixed; inset:auto 50% 30px auto; transform:translateX(50%);
-  background:var(--surface-2); border:1px solid var(--line-strong); z-index:70;
-  border-radius:999px; padding:8px 18px; font-size:13px; color:var(--text-2);
+  background:var(--surface-2); border:1px solid var(--control-border); z-index:70;
+  border-radius:999px; padding:9px 18px; font-size:13px; color:var(--text-2);
   display:flex; gap:9px; align-items:center;
 }
 .loading span{
@@ -165,6 +287,7 @@ button{font:inherit; cursor:pointer}
   border-top-color:transparent; animation:spin .8s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){ .loading span{animation-duration:2.4s} }
 
 /* ============================================================
    Print report — light, classy, vector charts
@@ -183,23 +306,31 @@ button{font:inherit; cursor:pointer}
     text-transform:uppercase; color:#8a7433; margin-bottom:2px}
   .report .r-tiles{display:grid; grid-template-columns:repeat(5,1fr); gap:4mm; margin:5mm 0 7mm}
   .report .r-tile{border:1px solid #e3e6ec; border-radius:6px; padding:4mm 4mm 3mm}
-  .report .r-tile b{display:block; font-family:Helvetica,Arial,sans-serif; font-size:17pt; color:#0E1116}
+  .report .r-tile b{display:block; font-family:Helvetica,Arial,sans-serif; font-size:17pt; color:#0E1116;
+    font-variant-numeric:tabular-nums}
   .report .r-tile span{font-family:Helvetica,Arial,sans-serif; font-size:7.5pt; letter-spacing:.08em;
     text-transform:uppercase; color:#8a93a5}
   .report h2{font-family:Helvetica,Arial,sans-serif; font-size:12.5pt; color:#0E1116;
     border-bottom:1px solid #e3e6ec; padding-bottom:2px; margin:8mm 0 4mm}
   .report .r-charts{display:grid; grid-template-columns:1fr 1fr; gap:6mm}
-  .report .r-chart{break-inside:avoid}
-  .report .r-chart h3{font-family:Helvetica,Arial,sans-serif; font-size:9.5pt; color:#4a5468; margin:0 0 2mm}
-  .report .r-chart .legend{font-family:Helvetica,Arial,sans-serif; font-size:8pt; color:#5a6478;
+  .report .r-chart{break-inside:avoid; --cs:1}
+  .report .r-chart h3{font-family:Helvetica,Arial,sans-serif; font-size:10.5pt; color:#1a2233; margin:0 0 2mm}
+  .report .r-chart .legend{font-family:Helvetica,Arial,sans-serif; font-size:8.5pt; color:#5a6478;
     display:flex; gap:5mm; margin-bottom:1.5mm}
+  .report .r-chart .legend i{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px}
   .report svg{width:100%; height:auto}
-  .report svg text{font-family:Helvetica,Arial,sans-serif}
+  .report svg text{font-family:Helvetica,Arial,sans-serif; font-variant-numeric:tabular-nums}
+  .report svg .t-cat,.report svg .t-val{font-size:8.5pt; fill:#1a2233}
+  .report svg .t-val{font-weight:600}
+  .report svg .t-tick{font-size:8pt; fill:#5a6478}
   .report table{width:100%; border-collapse:collapse; font-size:8.5pt;
     font-family:Helvetica,Arial,sans-serif; margin-top:3mm}
   .report th{background:#f2f4f8; text-align:left; padding:2mm 2.5mm; border:1px solid #e3e6ec;
     font-size:7.5pt; letter-spacing:.06em; text-transform:uppercase; color:#4a5468}
   .report td{padding:1.8mm 2.5mm; border:1px solid #e3e6ec; vertical-align:top}
+  /* keep dates and names on one line so rows stay compact */
+  .report table td:nth-child(1),.report table td:nth-child(3){white-space:nowrap}
+  .report table td:nth-child(2){white-space:nowrap}
   .report .r-foot{margin-top:8mm; padding-top:3mm; border-top:1px solid #e3e6ec;
     font-family:Helvetica,Arial,sans-serif; color:#8a93a5; font-size:7.5pt}
   .report tr{break-inside:avoid}

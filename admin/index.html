@@ -18,7 +18,7 @@
     </div>
     <div class="bar__user" id="user-area" hidden>
       <span class="bar__email" id="user-email"></span>
-      <button class="btn btn--ghost" id="btn-signout" type="button">Sign out</button>
+      <button class="btn btn--ghost btn--sm" id="btn-signout" type="button">Sign out</button>
     </div>
   </header>
 
@@ -26,8 +26,8 @@
   <main class="gate" id="view-signedout" hidden>
     <div class="gate__card">
       <h1>Program dashboard</h1>
-      <p>Responses and program analytics for the DAF CGOC Mentorship Program.
-         Access is limited to approved council members.</p>
+      <p>Responses, matches, and program analytics for the DAF CGOC Mentorship
+         Program. Access is limited to approved council members.</p>
       <button class="btn btn--gold" id="btn-signin" type="button">
         <svg viewBox="0 0 18 18" width="18" height="18" aria-hidden="true"><path fill="#fff" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92a8.78 8.78 0 0 0 2.68-6.62z"/><path fill="#fff" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#fff" d="M3.97 10.72a5.4 5.4 0 0 1 0-3.44V4.95H.96a9 9 0 0 0 0 8.1l3-2.33z"/><path fill="#fff" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59A9 9 0 0 0 .96 4.95l3 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
         Sign in with Google
@@ -51,6 +51,8 @@
     <nav class="tabs" role="tablist" aria-label="Dashboard sections">
       <button class="tab is-active" data-tab="overview" role="tab" aria-selected="true">Overview</button>
       <button class="tab" data-tab="responses" role="tab" aria-selected="false" id="tab-responses">Responses</button>
+      <button class="tab" data-tab="matches" role="tab" aria-selected="false" id="tab-matches">Matches</button>
+      <button class="tab" data-tab="activity" role="tab" aria-selected="false" id="tab-activity">Activity</button>
       <button class="tab" data-tab="viewers" role="tab" aria-selected="false" id="tab-viewers" hidden>Viewers</button>
       <span class="tabs__spacer"></span>
       <button class="btn btn--gold btn--sm" id="btn-report" type="button" hidden>Download report (PDF)</button>
@@ -64,29 +66,84 @@
 
     <section id="panel-responses" class="panel" role="tabpanel" hidden>
       <div class="filters">
-        <select id="f-role" aria-label="Filter by role">
+        <label class="sr-only" for="f-role">Filter by role</label>
+        <select id="f-role">
           <option value="">All roles</option>
           <option value="mentee">Mentees</option>
           <option value="mentor">Mentors</option>
         </select>
-        <input id="f-search" type="search" placeholder="Search name, email, AFSC, base…" aria-label="Search responses">
-        <span class="filters__count" id="f-count"></span>
+        <label class="sr-only" for="f-status">Filter by match status</label>
+        <select id="f-status">
+          <option value="">All statuses</option>
+          <option value="unmatched">Unmatched</option>
+          <option value="in_progress">Matching in progress</option>
+          <option value="matched">Matched</option>
+          <option value="ended">Ended</option>
+        </select>
+        <label class="sr-only" for="f-search">Search responses</label>
+        <input id="f-search" type="search" placeholder="Search name, email, AFSC, base…" aria-controls="rtable">
+        <span class="filters__count" id="f-count" role="status" aria-atomic="true"></span>
       </div>
-      <div class="tablewrap">
+      <div class="tablewrap" id="rtable-wrap">
         <table class="rtable" id="rtable">
+          <caption class="sr-only">Program sign-ups. Use the button in the Name column to open full details.</caption>
+          <thead><tr id="rtable-head"></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="empty" id="responses-empty" hidden></div>
+    </section>
+
+    <section id="panel-matches" class="panel" role="tabpanel" hidden>
+      <div class="tiles" id="match-tiles"></div>
+      <div class="filters">
+        <span class="filters__count" id="m-count" role="status" aria-atomic="true"></span>
+      </div>
+      <div class="tablewrap" id="mtable-wrap">
+        <table class="rtable" id="mtable">
+          <caption class="sr-only">Mentor and mentee pairings.</caption>
           <thead><tr>
-            <th>Submitted</th><th>Role</th><th>Name</th><th>Email</th><th>AFSC</th><th>Location</th>
+            <th scope="col">Mentee</th><th scope="col">Mentor</th><th scope="col">Status</th>
+            <th scope="col">Date of match</th><th scope="col">Notes</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
           </tr></thead>
           <tbody></tbody>
         </table>
       </div>
-      <p class="note" id="responses-empty" hidden>No submissions yet.</p>
+      <div class="empty" id="matches-empty" hidden>
+        <h3>No matches yet</h3>
+        <p>Open anyone on the <b>Responses</b> tab and use <b>Create match</b> to pair
+           a mentee with a mentor. Status and match date are tracked here.</p>
+      </div>
+    </section>
+
+    <section id="panel-activity" class="panel" role="tabpanel" hidden>
+      <p class="note" style="margin:0 0 14px">
+        Every change to a match or to dashboard access is recorded here with the
+        account that made it. Entries cannot be edited or deleted.
+      </p>
+      <div class="tablewrap">
+        <table class="rtable" id="atable">
+          <caption class="sr-only">Audit log of dashboard changes.</caption>
+          <thead><tr>
+            <th scope="col">When</th><th scope="col">Who</th>
+            <th scope="col">Action</th><th scope="col">Detail</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="empty" id="activity-empty" hidden>
+        <h3>No activity yet</h3>
+        <p>Changes to matches and viewer access will appear here as they happen.</p>
+      </div>
     </section>
 
     <section id="panel-viewers" class="panel" role="tabpanel" hidden>
       <form class="addviewer" id="add-viewer">
-        <input type="email" id="v-email" placeholder="email@example.com" required aria-label="Viewer email">
-        <select id="v-access" aria-label="Access level">
+        <label class="sr-only" for="v-email">Viewer email</label>
+        <input type="email" id="v-email" placeholder="email@example.com" required>
+        <label class="sr-only" for="v-access">Access level</label>
+        <select id="v-access">
           <option value="both">Responses + analytics</option>
           <option value="responses">Responses only</option>
           <option value="analytics">Analytics only</option>
@@ -95,22 +152,30 @@
       </form>
       <div class="tablewrap">
         <table class="rtable" id="vtable">
-          <thead><tr><th>Email</th><th>Access</th><th>Added</th><th></th></tr></thead>
+          <caption class="sr-only">Dashboard viewers.</caption>
+          <thead><tr>
+            <th scope="col">Email</th><th scope="col">Access</th><th scope="col">Added</th>
+            <th scope="col"><span class="sr-only">Actions</span></th>
+          </tr></thead>
           <tbody></tbody>
         </table>
       </div>
-      <p class="note">Super-admins always have full access and are set in the security rules — ask the webmaster to change that list.</p>
+      <p class="note">Super-admins always have full access and are set in the security
+        rules — ask the webmaster to change that list.</p>
     </section>
   </main>
 
-  <!-- ======== Detail overlay ======== -->
-  <div class="overlay" id="detail" hidden>
-    <div class="overlay__card" role="dialog" aria-modal="true" aria-labelledby="detail-title">
-      <button class="overlay__close" id="detail-close" aria-label="Close">×</button>
-      <h2 id="detail-title"></h2>
+  <!-- ======== Detail dialog ======== -->
+  <dialog class="detail" id="detail" aria-labelledby="detail-title">
+    <div class="detail__head">
+      <h2 id="detail-title" tabindex="-1"></h2>
+      <button class="detail__close" id="detail-close" type="button" aria-label="Close">&times;</button>
+    </div>
+    <div class="detail__body">
+      <div id="detail-match" class="matchbox"></div>
       <dl id="detail-body"></dl>
     </div>
-  </div>
+  </dialog>
 
   <div class="loading" id="loading"><span></span> Loading…</div>
   <div class="tooltip" id="tooltip" hidden></div>

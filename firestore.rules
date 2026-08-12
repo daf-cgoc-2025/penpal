@@ -55,6 +55,39 @@ service cloud.firestore {
       allow write: if isSuper();
     }
 
+    // Append-only audit trail: who changed what, and when. Entries can be
+    // created by anyone who can manage matches, but never edited or deleted
+    // by anyone (including super-admins) through the client, and the actor
+    // field cannot be forged because it must equal the caller's own email.
+    match /auditLog/{entryId} {
+      allow read: if canView(['responses', 'both']);
+      allow create: if canView(['responses', 'both'])
+        && request.resource.data.keys().hasOnly(
+             ['at', 'actor', 'action', 'targetId', 'summary', 'before', 'after'])
+        && request.resource.data.actor == request.auth.token.email
+        && request.resource.data.at == request.time
+        && request.resource.data.action is string
+        && request.resource.data.summary.size() <= 300;
+      allow update, delete: if false;
+    }
+
+    // Mentor/mentee pairings. Kept separate from penpalIntake so the
+    // submissions themselves stay immutable: program staff manage matches
+    // without ever being able to alter what someone submitted.
+    match /matches/{matchId} {
+      allow read, create, update, delete: if canView(['responses', 'both'])
+        && (request.method == 'delete' || (
+          request.resource.data.keys().hasOnly([
+            'menteeId', 'mentorId', 'menteeName', 'mentorName',
+            'status', 'matchedAt', 'notes', 'updatedBy', 'updatedAt'
+          ])
+          && request.resource.data.status in ['in_progress', 'matched', 'ended']
+          && request.resource.data.menteeId is string
+          && request.resource.data.mentorId is string
+          && (!('notes' in request.resource.data) || request.resource.data.notes.size() <= 1000)
+        ));
+    }
+
     match /penpalIntake/{docId} {
       allow update, delete: if false;
       allow read: if canView(['responses', 'both']);
