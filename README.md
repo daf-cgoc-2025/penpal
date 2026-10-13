@@ -51,7 +51,7 @@ visitor ──► index.html (static, GitHub Pages)
 | `js/penpal.js` | Interactivity: audience toggle, form branching/validation, submission, intake events |
 | `js/analytics.js` | Shared engagement tracking (identical copy lives in the main site repo) |
 | `admin/` | Program dashboard: Google sign-in, responses, charts, PDF report |
-| `firestore.rules` | Source of truth for the Firestore rules published in the console |
+| `firestore.rules` | Source of truth for the Firestore rules published in the console. Project `dafcgoc` has one ruleset, so this file also carries the Think Tank site's `thinktankIntake` block |
 | `apps-script/` | Poller (Sheet + email), GA4 report emails, manifest — pasted into script.google.com per `SETUP.md` |
 | `SETUP.md` | One-time console setup checklist |
 
