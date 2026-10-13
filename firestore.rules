@@ -160,6 +160,38 @@ service cloud.firestore {
         );
     }
 
+    // Think Tank sign-ups (thinktank.dafcgoc.org, repo daf-cgoc-2025/thinktank).
+    // Public create, one per email (the client derives the doc id from the
+    // email, and updates are denied). Readable by super-admins only.
+    match /thinktankIntake/{docId} {
+      allow update, delete: if false;
+      allow read: if isSuper();
+
+      allow create: if
+        request.resource.data.keys().hasOnly([
+          'schemaVersion', 'program', 'name', 'email',
+          'experience', 'interest', 'commitment', 'createdAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'schemaVersion', 'program', 'name', 'email',
+          'experience', 'interest', 'commitment', 'createdAt'
+        ])
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.program == 'DAF CGOC Think Tank'
+        && request.resource.data.name is map
+        && request.resource.data.name.keys().hasOnly(['rank', 'first', 'last'])
+        && isStr(request.resource.data.name.rank, 1, 40)
+        && isStr(request.resource.data.name.first, 1, 60)
+        && isStr(request.resource.data.name.last, 1, 60)
+        && isStr(request.resource.data.email, 5, 120)
+        && request.resource.data.email.matches('.+@.+\\..+')
+        && request.resource.data.experience in ['none', 'minimal', 'moderate', 'experienced']
+        && isStr(request.resource.data.interest, 1, 2000)
+        && request.resource.data.commitment == true
+        // server-assigned timestamp (client sends serverTimestamp())
+        && request.resource.data.createdAt == request.time;
+    }
+
     // Everything else in the database: no client access.
     match /{document=**} {
       allow read, write: if false;
