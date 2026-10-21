@@ -30,9 +30,6 @@ var COLLECTION = 'penpalIntake';
 var NOTIFY_EMAIL = 'nationalcgoc@gmail.com';
 var DASHBOARD_URL = 'https://daf-cgoc-2025.github.io/penpal/admin/';
 
-// TEMPORARY — testing only. Remove (set to '') after launch verification.
-var TEST_BCC = 'arkady232@gmail.com';
-
 // Friendly labels for form values (mirrors the site's admin dashboard)
 var VALUE_LABELS = {
   usafa: 'USAFA', afrotc: 'AFROTC', ots: 'OTS', direct: 'Direct commission', other: 'Other',
@@ -114,7 +111,6 @@ function syncIntakes() {
 
     MailApp.sendEmail({
       to: NOTIFY_EMAIL,
-      bcc: TEST_BCC, // TEMPORARY — remove after testing
       subject: '[Penpal] New ' + data.role + ' intake — ' + fullName,
       body: plainBody(data, name, branch, ss),          // fallback for text-only clients
       htmlBody: htmlBody(data, name, branch, ss)

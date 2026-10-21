@@ -32,9 +32,6 @@ var GA4_PROPERTIES = [
 
 var REPORT_EMAIL = 'nationalcgoc@gmail.com';
 
-// TEMPORARY — testing only. Remove (set to '') after launch verification.
-var REPORT_BCC = 'arkady232@gmail.com';
-
 function weeklyReport()  { sendReport('Weekly',  '7daysAgo',  'yesterday'); }
 function monthlyReport() { sendReport('Monthly', '30daysAgo', 'yesterday'); }
 
@@ -180,7 +177,6 @@ function sendReport(kind, startDate, endDate) {
 
     MailApp.sendEmail({
       to: REPORT_EMAIL,
-      bcc: REPORT_BCC, // TEMPORARY — remove after testing
       subject: '[DAF CGOC] ' + kind + ' analytics report — ' + prop.label,
       body: body,
       htmlBody: htmlBody

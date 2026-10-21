@@ -137,8 +137,7 @@ A cap of 250 events per page view guards the free-tier quota.
 - **Analytics events**: use the `track(name, params)` helper in
   `js/penpal.js`. No PII in event parameters, ever.
 - **Going to prod**: remove `<meta name="robots" content="noindex, nofollow">`
-  in `index.html` when the page is approved for search, and delete the
-  temporary `TEST_BCC`/`REPORT_BCC` values in the Apps Script files.
+  in `index.html` when the page is approved for search.
 
 The page carries a `noindex` meta and a "preview build" notice until launch
 approval — see `SETUP.md` for the go-live checklist.

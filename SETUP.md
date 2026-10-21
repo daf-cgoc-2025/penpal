@@ -31,9 +31,6 @@ firestore:rules` with sufficient IAM).
 4. Run **`setup`** once from the editor → grant the authorization prompts. This creates all three triggers (intake sync every 15 min, weekly report, monthly report) and runs the first sync immediately.
 5. New submissions now appear as rows in the **Intakes** tab and as an email to nationalcgoc@gmail.com within 15 minutes. A test submission ("EndToEnd Test", marked *delete me*) is already sitting in Firestore — the first sync should pick it up; delete its row and the Firestore doc after confirming.
 
-> The scripts currently BCC `arkady232@gmail.com` — **temporary, for launch
-> testing only**. Delete the `TEST_BCC` / `REPORT_BCC` values after verifying.
-
 ## 4. Weekly/monthly analytics report emails
 
 1. In the same Apps Script project, add a file with [`apps-script/ga4-reports.gs`](apps-script/ga4-reports.gs).
