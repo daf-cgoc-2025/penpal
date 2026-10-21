@@ -170,13 +170,27 @@ service cloud.firestore {
       allow create: if
         request.resource.data.keys().hasOnly([
           'schemaVersion', 'program', 'name', 'email',
-          'experience', 'interest', 'commitment', 'createdAt'
+          'experience', 'interest', 'commitment', 'createdAt',
+          'topic', 'selfStudy'
         ])
         && request.resource.data.keys().hasAll([
           'schemaVersion', 'program', 'name', 'email',
           'experience', 'interest', 'commitment', 'createdAt'
         ])
-        && request.resource.data.schemaVersion == 1
+        // v1 has no topic or selfStudy; v2 requires both
+        && (
+          (
+            request.resource.data.schemaVersion == 1
+            && !('topic' in request.resource.data)
+            && !('selfStudy' in request.resource.data)
+          )
+          ||
+          (
+            request.resource.data.schemaVersion == 2
+            && isStr(request.resource.data.topic, 1, 60)
+            && request.resource.data.selfStudy is bool
+          )
+        )
         && request.resource.data.program == 'DAF CGOC Think Tank'
         && request.resource.data.name is map
         && request.resource.data.name.keys().hasOnly(['rank', 'first', 'last'])
