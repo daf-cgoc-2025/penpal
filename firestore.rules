@@ -160,12 +160,63 @@ service cloud.firestore {
         );
     }
 
+    // ---- Think Tank dashboard (thinktank.dafcgoc.org/admin/) ----
+    // Same model as the penpal dashboard with its own viewer list, so a Think
+    // Tank viewer sees no penpal data and a penpal viewer sees no Think Tank
+    // data. Super-admins (dashboardAdmins) see both.
+    function ttViewerPath() {
+      return /databases/$(database)/documents/thinktankViewers/$(request.auth.token.email);
+    }
+    function canViewTT(kinds) {
+      return isSuper() ||
+        (request.auth != null && exists(ttViewerPath()) &&
+         get(ttViewerPath()).data.access in kinds);
+    }
+
+    match /thinktankViewers/{email} {
+      allow get: if isSuper() ||
+        (request.auth != null && request.auth.token.email == email);
+      allow list, write: if isSuper();
+    }
+
+    match /thinktankStats/{docId} {
+      allow read: if canViewTT(['analytics', 'responses', 'both']);
+      allow write: if isSuper();
+    }
+
+    match /thinktankAuditLog/{entryId} {
+      allow read: if canViewTT(['responses', 'both']);
+      allow create: if canViewTT(['responses', 'both'])
+        && request.resource.data.keys().hasOnly(
+             ['at', 'actor', 'action', 'targetId', 'summary', 'before', 'after'])
+        && request.resource.data.actor == request.auth.token.email
+        && request.resource.data.at == request.time
+        && request.resource.data.action is string
+        && request.resource.data.summary.size() <= 300;
+      allow update, delete: if false;
+    }
+
+    // One review per application, keyed by the thinktankIntake doc id, so the
+    // submission itself stays immutable.
+    match /thinktankReviews/{intakeId} {
+      allow read, delete: if canViewTT(['responses', 'both']);
+      allow create, update: if canViewTT(['responses', 'both'])
+        && request.resource.data.keys().hasOnly(
+             ['name', 'status', 'cohort', 'notes', 'updatedBy', 'updatedAt'])
+        && request.resource.data.status in ['reviewing', 'accepted', 'waitlisted', 'declined']
+        && isStr(request.resource.data.name, 0, 120)
+        && isStr(request.resource.data.cohort, 0, 60)
+        && isStr(request.resource.data.notes, 0, 1000)
+        && request.resource.data.updatedBy == request.auth.token.email
+        && request.resource.data.updatedAt == request.time;
+    }
+
     // Think Tank sign-ups (thinktank.dafcgoc.org, repo daf-cgoc-2025/thinktank).
     // Public create, one per email (the client derives the doc id from the
-    // email, and updates are denied). Readable by super-admins only.
+    // email, and updates are denied).
     match /thinktankIntake/{docId} {
       allow update, delete: if false;
-      allow read: if isSuper();
+      allow read: if canViewTT(['responses', 'both']);
 
       allow create: if
         request.resource.data.keys().hasOnly([
@@ -175,22 +226,12 @@ service cloud.firestore {
         ])
         && request.resource.data.keys().hasAll([
           'schemaVersion', 'program', 'name', 'email',
-          'experience', 'interest', 'commitment', 'createdAt'
+          'experience', 'interest', 'commitment', 'createdAt',
+          'topic', 'selfStudy'
         ])
-        // v1 has no topic or selfStudy; v2 requires both
-        && (
-          (
-            request.resource.data.schemaVersion == 1
-            && !('topic' in request.resource.data)
-            && !('selfStudy' in request.resource.data)
-          )
-          ||
-          (
-            request.resource.data.schemaVersion == 2
-            && isStr(request.resource.data.topic, 1, 60)
-            && request.resource.data.selfStudy is bool
-          )
-        )
+        && request.resource.data.schemaVersion == 2
+        && isStr(request.resource.data.topic, 1, 60)
+        && request.resource.data.selfStudy is bool
         && request.resource.data.program == 'DAF CGOC Think Tank'
         && request.resource.data.name is map
         && request.resource.data.name.keys().hasOnly(['rank', 'first', 'last'])
