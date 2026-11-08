@@ -148,7 +148,7 @@ function computeStats(docs) {
   const bump = (o, k) => { if (k) o[k] = (o[k] || 0) + 1; };
   docs.forEach((d) => {
     d.role === "mentee" ? s.mentees++ : s.mentors++;
-    const month = String(d.createdAt || "").slice(0, 7);
+    const month = tsOf(d.createdAt).slice(0, 7);
     if (month) {
       s.byMonth[month] = s.byMonth[month] || { mentee: 0, mentor: 0 };
       s.byMonth[month][d.role]++;
@@ -438,7 +438,7 @@ function hookTooltips(root) {
 
 /* ---------------- responses table ---------------- */
 const COLUMNS = [
-  { key: "createdAt", label: "Submitted", get: (d) => d.createdAt || "" },
+  { key: "createdAt", label: "Submitted", get: (d) => tsOf(d.createdAt) },
   { key: "role", label: "Role", get: (d) => d.role },
   { key: "name", label: "Name", get: (d) => fullName(d) },
   { key: "status", label: "Status", get: (d) => STATUS_LABEL[statusOf(d.id)] },
@@ -890,7 +890,7 @@ $("btn-report").addEventListener("click", () => {
     tableHtml += `<h2>Responses (${responses.length})</h2>
       <table><thead><tr><th>Submitted</th><th>Role</th><th>Name</th><th>Email</th>
       <th>Status</th><th>Matched with</th><th>AFSC</th><th>Location</th><th>Details</th></tr></thead><tbody>` +
-      responses.slice().sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")))
+      responses.slice().sort((a, b) => tsOf(b.createdAt).localeCompare(tsOf(a.createdAt)))
         .map((d) => {
           const ps = partnersOf(d);
           const b = branchOf(d);
